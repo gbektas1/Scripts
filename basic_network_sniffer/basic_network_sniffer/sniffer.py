@@ -2,9 +2,9 @@
 
 ''' 
 This script uses the scapy sniff() funtion to capture network packets.
-
-if we want to see a detailed lists of all the scapy methods available we should run the python repl 
+If we want to see a detailed lists of all the scapy methods available we should run the python repl 
 and then run scapy.lsc() funtion.
+
 '''
 
 import logging
@@ -13,6 +13,7 @@ import sys
 from datetime import datetime
 
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+#getting loger with specific runtime - setLevel specifies lowest-severity log message WARNING - ERROR - CRITICAL ETC.
 logging.getLogger("scapy.interactive").setLevel(logging.ERROR)
 logging.getLogger("scapy.loading").setLevel(logging.ERROR)
 
@@ -34,7 +35,7 @@ print('Make sure the application is running with root privileges!!! ')
 
 #Section: asking the user for the Interface in which to perform the packets sniffing. 
 
-net_iface = input("* Enter tje interface on which to run the sniffer (like 'eth1'): ")
+net_iface = input("* Enter the interface on which to run the sniffer (like 'eth1'): ")
 
 subprocess.call(["ifconfig", net_iface, 'promisc'], stdout=None, stderr=None, shell=False)
 
@@ -67,7 +68,7 @@ proto_sniff = input("* Enter the protocol to filter by (arp|bootp|icmp|0 is all)
 
 #Considering the case when the user enters 0 (meaning all protocols)
 if (proto_sniff == "arp") or (proto_sniff == "bootp") or (proto_sniff == "icmp"):
-    print("\nThe program will capture only %s packets.\n" % proto_sniff.upper()) 
+    print("\nThe program will capture only %s packets.\n" % proto_sniff.upper())
     
 elif (proto_sniff) == "0":
     print("\nThe program will capture all protocols.\n")
@@ -93,3 +94,25 @@ def packet_log(packet):
     elif (proto_sniff == "arp") or (proto_sniff == "bootp") or (proto_sniff == "icmp"):
         #writing the data to the log file
         print("Time: " + str(now) + " Protocol: " + proto_sniff.upper() + " SMAC: " + packet[0].src + " DMAC: " + packet[0].dst, file = sniffer_log)
+        
+        
+#Printing an informational message to the screen
+print("\n* Starting the capture...")
+
+
+#Running the sniffing process (with or without a filter)
+if proto_sniff == "0":
+    sniff(iface = net_iface, count = int(pkt_to_sniff), timeout = int(time_to_sniff), prn = packet_log)
+    
+elif (proto_sniff == "arp") or (proto_sniff == "bootp") or (proto_sniff == "icmp"):
+    sniff(iface = net_iface, filter = proto_sniff, count = int(pkt_to_sniff), timeout = int(time_to_sniff), prn = packet_log)
+
+else:
+    print("\nCould not identify the protocol.\n")
+    sys.exit()
+    
+#Printing the closing message
+print("\n Please cgeck the %s file to see the captured packets.\n" % file_name)
+
+#Closing the log file
+sniffer_log.close()
